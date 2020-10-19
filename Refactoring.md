@@ -28,7 +28,7 @@ PINK_LIGHT = (254,169,163)
 rect(screen, (255, 213, 170), (0, 0, 880, 560))
 rect(screen, (250, 214, 195), (0, 148, 880, 112))
 
-#Верхние хребты
+#Top ridge
 def draw_top_scar(color):
     '''Function draws top scar
     Attrubutes:
@@ -55,7 +55,7 @@ def draw_top_scar(color):
     pygame.draw.ellipse(surface, (250, 214, 195), [-280, -485, 489, 556])
     screen.blit(surface, [12, 180])
 
-#Хребты в середине
+#Middle ridge
 def draw_midlle_scar(color):
     '''Function draws top scar
     Attrubutes:
@@ -82,7 +82,7 @@ def draw_water(color):
     '''
     polygon(screen, color, [(0, 392), (880, 373), (880, 569), (0, 560)])
 
-#Нижние хребты
+#Down ridge
 def draw_down_scar(color1, color2, color3,):
     '''Function draws top scar
     Attrubutes:
@@ -100,7 +100,7 @@ def draw_down_scar(color1, color2, color3,):
     polygon(screen, color3, [(242, 386), (329, 290), (469, 382)])
     polygon(screen, color3, [(507, 381), (647, 277), (800, 373)])
 
-#Солнце
+#The Sun
 def draw_sun(color):
     '''Function draws the sun
     Attrubutes:
@@ -109,7 +109,7 @@ def draw_sun(color):
     '''
     ellipse(screen, color, (368, 93, 100, 91))
 
-#Птицы
+#Birds
 def draw_bird(x, y, a):
     '''Function draws bird
     Attrubutes:
