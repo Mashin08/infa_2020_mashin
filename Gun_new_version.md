@@ -3,6 +3,7 @@ import tkinter as tk
 import math
 import time
 from tkinter import *
+from PIL import Image, ImageTk
 # print (dir(math))
 
 root = tk.Tk()
@@ -46,13 +47,9 @@ class ball():
         self.live = 1
 
     def set_coords(self):
-        canv.coords(
-                self.id,
-                self.x - self.r,
-                self.y - self.r,
-                self.x + self.r,
-                self.y + self.r
-        )
+        self.bullet_obj = PhotoImage(file = "C:\\Users\\NIKITA\\Desktop\\Gun\\bomb.png")
+        self.id = canv.create_image(self.x, self.y, anchor = NW, image = self.bullet_obj)
+        
     def delete(self):
         """Delete the object form the canvas.
         Args:
@@ -115,7 +112,7 @@ class Bomb():
         self.points = 0
         self.live = 1
         self.vx = 0
-        self.vy = 10
+        self.vy = 20
 
         # FIXME: don't work!!! How to call this functions when object is created?
         self.id = canv.create_oval(5,5,5,5)
@@ -134,9 +131,9 @@ class Bomb():
 
     def new_boomb(self):
         """ Инициализация новой цели. """
-        x = self.x = rnd(50, 1250)
-        y = self.y = 10
-        r = self.r = rnd(20, 25)
+        x = self.x = g2.x+30
+        y = self.y = 100
+        r = self.r = rnd(10, 15)
         color = self.color = 'red'
         canv.coords(self.id, x-r, y-r, x+r, y+r)
         canv.itemconfig(self.id, fill=color)
@@ -156,7 +153,7 @@ class Bomb():
     def booom(self, obj):
         """Попадание шарика в цель."""
         global g1
-        if obj.x+160> self.x > obj.x and self.y == obj.y:
+        if obj.x+100> self.x > obj.x and self.y == obj.y:
             return True
 
         else:
@@ -171,12 +168,15 @@ class gun():
         self.f2_power = 10
         self.f2_on = 0
         self.type = 1
-        self.an = 1
+        self.an = 0
         self.y = y
         self.x = x
         self.vx = 0
+        self.filename = 'ship.png'
+        self.vy = 0
         self.live = 1
-        self.gun_obj = PhotoImage(file = "C:\\Users\\NIKITA\\Desktop\\Gun\\ship.png")
+        image = Image.open(self.filename)
+        self.gun_obj = ImageTk.PhotoImage(file = "C:\\Users\\NIKITA\\Desktop\\Gun\\ship.png")
         self.id = canv.create_image(x, y, anchor = NW, image = self.gun_obj)
    
         
@@ -195,10 +195,14 @@ class gun():
         new_ball = ball()
         new_ball.r += 5
         self.an = 3*math.pi/2
-        new_ball.vx = 0
+        self.an = math.atan((-event.y+self.y) / (event.x-self.x))
+        if self.an > 0:
+            new_ball.vx = 40*math.cos(self.an)
+        if self.an < 0:
+            new_ball.vx = -40*math.cos(self.an)
         new_ball.vy = -50
         new_ball.y = self.y
-        new_ball.x = self.x+50
+        new_ball.x = self.x+35
         balls += [new_ball]
         self.f2_on = 0
         self.f2_power = 10
@@ -208,18 +212,70 @@ class gun():
         
     def move_right(self, event):
         self.vx = 10
+    def move_up(self, event):
+        self.vy = 10
         
+    def move_down(self, event):
+        self.vy = -10
     
     def move(self):
         
         self.x += self.vx
+        self.y += self.vy
         self.vx = 0
+        self.vy = 0
         root.bind('<a>', g1.move_left)
         root.bind('<d>', g1.move_right)
+        root.bind('<s>', g1.move_up)
+        root.bind('<w>', g1.move_down)
+        canv.coords(self.id, self.x, self.y)
+
+    def rotate(self, event):
+        global image
+        image = self.gun_obj
+        
+        
+        self.an = math.atan((event.y-self.y) / (event.x-self.x))
+        
+        
+        tkimage = image.transpose(PIL.Image.ROTATE_90)
+        self.id = canv.create_image(self.x, self.y,anchor=NW, image=tkimage )
+        canv.itemconfig(self.id)
+    
+class gun2():
+    def __init__(self, x = 0, y = 0):
+        self.an = 0
+        self.y = y
+        self.x = x
+        self.vx = 10
+        self.filename = 'ship2.png'
+        self.vy = 0
+        self.live = 1
+        image = Image.open(self.filename)
+        self.gun2_obj = ImageTk.PhotoImage(file = "C:\\Users\\NIKITA\\Desktop\\Gun\\ship2.png")
+        self.id = canv.create_image(x, y, anchor = NW, image = self.gun2_obj)
+   
+        
+
+    
+    
+    def move(self):
+        
+        self.x += self.vx
+        self.y = 0
+        if self.x > 1300:
+            self.x = 1300
+            self.vx = -10
+        if self.x < 0:
+            self.vx = 10
         
         canv.coords(self.id, self.x, self.y)
+
     
-    
+        
+
+
+
 class target():
     def __init__(self):
 
@@ -293,6 +349,7 @@ class target():
 
 screen1 = canv.create_text(40, 100, text='', font='30')
 g1 = gun()
+g2 = gun2()
 boombs = []
 
 bullet = 0
@@ -319,12 +376,13 @@ def new_game(event=''):
     global g1, t1, b1, screen1, balls, bullet, targets, boombs
 
     
-    
-    root.bind('<Button-1>', g1.fire2_end)
-    root.bind('<Double-Button-1>', make_bomb)
-    
-    root.bind('<ButtonRelease-1>', make_targets)
     g1.move()
+    root.bind('<Button-1>', g1.fire2_end)
+    
+    root.bind('<Double-Button-1>', make_bomb)
+    root.bind('<ButtonRelease-1>', make_targets)
+    root.bind('<Motion>', g1.rotate)
+    
     
     
     bullet = 0
@@ -337,10 +395,16 @@ def new_game(event=''):
     screen2 = canv.create_text(600, 300, text='', font='70')
 
     while balls or g1.live or bombs:
+        g2.move()
+        if g2.x % 300 ==0:
+            b1 = Bomb()
+            b1.new_boomb()
+            boombs.append(b1)
         for b1 in boombs:    
             b1.boomb_move()
             b1.set_coords()
             if b1.booom(g1):
+
                 canv.delete(g1.id)
                 canv.itemconfig(screen2, text='Вы проиграли((((((((', font=('Arial',50,'bold italic'), fill = 'blue')
                 root.after(3000, canv.destroy)
@@ -368,14 +432,14 @@ def new_game(event=''):
                 b.live -= 0.01
                 b.set_coords()
                 for t1 in targets:
-	                if b.hittest(t1) and t1.live:
-	                    t1.live = 0
-	                    
-	                    t1.hit()
-	                    canv.bind('<Button-1>', '')
-	                    canv.bind('<ButtonRelease-1>', '')
+                    if b.hittest(t1) and t1.live:
+                        t1.live = 0
+                        
+                        t1.hit()
+                        canv.bind('<Button-1>', '')
+                        canv.bind('<ButtonRelease-1>', '')
 
-	                    canv.itemconfig(screen1, text='Points ' + str(bullet))
+                        canv.itemconfig(screen1, text='Points ' + str(bullet))
             canv.update()
         time.sleep(0.03)
         
